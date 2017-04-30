@@ -124,9 +124,6 @@ function optionsFactory(inpOptions, callback) {
       icon(options).then((result) => {
         options.icon = result;
         callback();
-      }).catch((error) => {
-        log.warn('Cannot automatically retrieve the app icon:', error);
-        callback();
       });
     },
     (callback) => {

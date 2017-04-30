@@ -1,3 +1,4 @@
+import log from 'loglevel';
 import { inferIcon } from './../../infer';
 
 export default function ({ icon, targetUrl, platform }) {
@@ -6,5 +7,9 @@ export default function ({ icon, targetUrl, platform }) {
     return icon;
   }
 
-  return inferIcon(targetUrl, platform);
+  return inferIcon(targetUrl, platform)
+    .catch((error) => {
+      log.warn('Cannot automatically retrieve the app icon:', error);
+      return null;
+    });
 }

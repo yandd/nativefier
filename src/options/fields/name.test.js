@@ -1,7 +1,7 @@
 import log from 'loglevel';
 import name from './name';
 import { DEFAULT_APP_NAME } from './../../constants';
-import inferTitle from './../../infer/inferTitle';
+import { inferTitle } from './../../infer';
 
 jest.mock('./../../infer/inferTitle');
 jest.mock('loglevel');
