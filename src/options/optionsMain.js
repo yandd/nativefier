@@ -8,19 +8,12 @@ import asyncConfig from './asyncConfig';
 
 const { inferPlatform, inferArch } = inferOs;
 
-
-/**
- * @callback optionsCallback
- * @param error
- * @param options augmented options
- */
-
 /**
  * Extracts only desired keys from inpOptions and augments it with defaults
- * @param inpOptions
- * @param {optionsCallback} callback
+ * @param {Object} inpOptions
+ * @returns {Promise}
  */
-function optionsFactory(inpOptions, callback) {
+export default function (inpOptions) {
   const options = {
     dir: PLACEHOLDER_APP_DIR,
     name: inpOptions.name,
@@ -92,12 +85,6 @@ function optionsFactory(inpOptions, callback) {
     options.height = options.maxHeight;
   }
 
-  asyncConfig(options)
-    .then((options) => {
-      callback(null, options);
-    }).catch((error) => {
-      callback(error);
-    });
+  return asyncConfig(options);
 }
 
-export default optionsFactory;
