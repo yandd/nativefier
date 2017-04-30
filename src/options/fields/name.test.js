@@ -1,21 +1,25 @@
+import log from 'loglevel';
 import name from './name';
 import { DEFAULT_APP_NAME } from './../../constants';
-import { inferTitle } from './../../infer';
+import inferTitle from './../../infer/inferTitle';
 
-let mockedResult = 'mock name';
-jest.mock('./../../infer/inferTitle', () => jest.fn(() => Promise.resolve(mockedResult)));
+jest.mock('./../../infer/inferTitle');
+jest.mock('loglevel');
 
-describe('when a name parameter is passed', () => {
-  describe('when it is well formed', () => {
-    test('it should not call inferTitle', () => {
-      expect(inferTitle).toHaveBeenCalledTimes(0);
-      const params = { name: 'appname' };
-      expect(name(params)).toBe(params.name);
-    });
+const mockedResult = 'mock name';
+
+describe('well formed name parameters', () => {
+  test('it should not call inferTitle', () => {
+    expect(inferTitle).toHaveBeenCalledTimes(0);
+    const params = { name: 'appname' };
+    expect(name(params)).toBe(params.name);
   });
+});
 
+describe('bad name parameters', () => {
   describe('when the name is undefined', () => {
     test('it should call inferTitle', () => {
+      inferTitle.mockImplementationOnce(() => Promise.resolve(mockedResult));
       const params = { targetUrl: 'some url' };
 
       return name(params).then(() => {
@@ -26,31 +30,46 @@ describe('when a name parameter is passed', () => {
 
   describe('when the name is an empty string', () => {
     test('it should call inferTitle', () => {
+      inferTitle.mockImplementationOnce(() => Promise.resolve(mockedResult));
       const params = { targetUrl: 'some url', name: '' };
 
       return name(params).then(() => {
         expect(inferTitle).toHaveBeenCalledWith(params.targetUrl);
       });
     });
+  });
+});
 
-    test('it should return the result from inferTitle', () => {
-      const params = { targetUrl: 'some url', name: '' };
+describe('handling inferTitle results', () => {
+  const params = { targetUrl: 'some url', name: '' };
+  test('it should return the result from inferTitle', () => {
+    inferTitle.mockImplementationOnce(() => Promise.resolve(mockedResult));
+
+    return name(params).then((result) => {
+      expect(result).toBe(mockedResult);
+      expect(inferTitle).toHaveBeenCalledWith(params.targetUrl);
+    });
+  });
+
+  describe('when the returned pageTitle is falsey', () => {
+    test('it should return the default app name', () => {
+      inferTitle.mockImplementationOnce(() => Promise.resolve(null));
 
       return name(params).then((result) => {
-        expect(result).toBe(mockedResult);
+        expect(result).toBe(DEFAULT_APP_NAME);
         expect(inferTitle).toHaveBeenCalledWith(params.targetUrl);
       });
     });
+  });
 
-    describe('when the returned pageTitle is falsey', () => {
-      test('it should return the default app name', () => {
-        mockedResult = null;
-        const params = { targetUrl: 'some url', name: '' };
+  describe('when inferTitle resolves with an error', () => {
+    test('it should return the default app name', () => {
+      inferTitle.mockImplementationOnce(() => Promise.reject('some error'));
 
-        return name(params).then((result) => {
-          expect(result).toBe(DEFAULT_APP_NAME);
-          expect(inferTitle).toHaveBeenCalledWith(params.targetUrl);
-        });
+      return name(params).then((result) => {
+        expect(result).toBe(DEFAULT_APP_NAME);
+        expect(inferTitle).toHaveBeenCalledWith(params.targetUrl);
+        expect(log.warn).toHaveBeenCalledTimes(1);
       });
     });
   });
