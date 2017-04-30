@@ -1,4 +1,3 @@
-import path from 'path';
 import _ from 'lodash';
 import async from 'async';
 import log from 'loglevel';
@@ -9,12 +8,9 @@ import inferOs from './../infer/inferOs';
 import normalizeUrl from './normalizeUrl';
 import packageJson from './../../package.json';
 import { icon, userAgent } from './fields';
+import { DEFAULT_APP_NAME, ELECTRON_VERSION, PLACEHOLDER_APP_DIR } from './../constants';
 
 const { inferPlatform, inferArch } = inferOs;
-
-const PLACEHOLDER_APP_DIR = path.join(__dirname, '../../', 'app');
-const ELECTRON_VERSION = '1.6.6';
-const DEFAULT_APP_NAME = 'APP';
 
 function sanitizeFilename(platform, str) {
   let result = sanitizeFilenameLib(str);
