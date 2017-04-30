@@ -1,11 +1,10 @@
-import async from 'async';
 import log from 'loglevel';
 
 import inferOs from './../infer/inferOs';
 import normalizeUrl from './normalizeUrl';
 import packageJson from './../../package.json';
-import { icon, userAgent, name } from './fields';
 import { ELECTRON_VERSION, PLACEHOLDER_APP_DIR } from './../constants';
+import asyncConfig from './asyncConfig';
 
 const { inferPlatform, inferArch } = inferOs;
 
@@ -93,29 +92,12 @@ function optionsFactory(inpOptions, callback) {
     options.height = options.maxHeight;
   }
 
-  async.waterfall([
-    (callback) => {
-      userAgent(options).then((result) => {
-        options.userAgent = result;
-        callback();
-      }).catch(callback);
-    },
-    (callback) => {
-      icon(options).then((result) => {
-        options.icon = result;
-        callback();
-      });
-    },
-    (callback) => {
-      name(options).then((result) => {
-        options.name = result;
-      }).then(() => {
-        callback();
-      });
-    },
-  ], (error) => {
-    callback(error, options);
-  });
+  asyncConfig(options)
+    .then((options) => {
+      callback(null, options);
+    }).catch((error) => {
+      callback(error);
+    });
 }
 
 export default optionsFactory;
