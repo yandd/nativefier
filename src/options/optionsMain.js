@@ -3,11 +3,10 @@ import async from 'async';
 import log from 'loglevel';
 import sanitizeFilenameLib from 'sanitize-filename';
 
-import inferTitle from './../infer/inferTitle';
 import inferOs from './../infer/inferOs';
 import normalizeUrl from './normalizeUrl';
 import packageJson from './../../package.json';
-import { icon, userAgent } from './fields';
+import { icon, userAgent, name } from './fields';
 import { DEFAULT_APP_NAME, ELECTRON_VERSION, PLACEHOLDER_APP_DIR } from './../constants';
 
 const { inferPlatform, inferArch } = inferOs;
@@ -131,17 +130,8 @@ function optionsFactory(inpOptions, callback) {
       });
     },
     (callback) => {
-      // length also checks if its the commanderJS function or a string
-      if (options.name && options.name.length > 0) {
-        callback();
-        return;
-      }
-      options.name = DEFAULT_APP_NAME;
-
-      inferTitle(options.targetUrl).then((pageTitle) => {
-        options.name = pageTitle;
-      }).catch((error) => {
-        log.warn(`Unable to automatically determine app name, falling back to '${DEFAULT_APP_NAME}'. Reason: ${error}`);
+      name(options).then((result) => {
+        options.name = result;
       }).then(() => {
         callback();
       });
