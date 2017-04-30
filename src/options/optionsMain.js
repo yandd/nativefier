@@ -7,9 +7,9 @@ import sanitizeFilenameLib from 'sanitize-filename';
 import inferIcon from './../infer/inferIcon';
 import inferTitle from './../infer/inferTitle';
 import inferOs from './../infer/inferOs';
-import inferUserAgent from './../infer/inferUserAgent';
 import normalizeUrl from './normalizeUrl';
 import packageJson from './../../package.json';
+import { userAgent } from './fields';
 
 const { inferPlatform, inferArch } = inferOs;
 
@@ -121,16 +121,10 @@ function optionsFactory(inpOptions, callback) {
 
   async.waterfall([
     (callback) => {
-      if (options.userAgent) {
+      userAgent(options).then((result) => {
+        options.userAgent = result;
         callback();
-        return;
-      }
-      inferUserAgent(options.electronVersion, options.platform)
-        .then((userAgent) => {
-          options.userAgent = userAgent;
-          callback();
-        })
-        .catch(callback);
+      }).catch(callback);
     },
     (callback) => {
       if (options.icon) {
