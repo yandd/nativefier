@@ -4,12 +4,11 @@ import async from 'async';
 import log from 'loglevel';
 import sanitizeFilenameLib from 'sanitize-filename';
 
-import inferIcon from './../infer/inferIcon';
 import inferTitle from './../infer/inferTitle';
 import inferOs from './../infer/inferOs';
 import normalizeUrl from './normalizeUrl';
 import packageJson from './../../package.json';
-import { userAgent } from './fields';
+import { icon, userAgent } from './fields';
 
 const { inferPlatform, inferArch } = inferOs;
 
@@ -127,19 +126,13 @@ function optionsFactory(inpOptions, callback) {
       }).catch(callback);
     },
     (callback) => {
-      if (options.icon) {
+      icon(options).then((result) => {
+        options.icon = result;
         callback();
-        return;
-      }
-      inferIcon(options.targetUrl, options.platform)
-        .then((pngPath) => {
-          options.icon = pngPath;
-          callback();
-        })
-        .catch((error) => {
-          log.warn('Cannot automatically retrieve the app icon:', error);
-          callback();
-        });
+      }).catch((error) => {
+        log.warn('Cannot automatically retrieve the app icon:', error);
+        callback();
+      });
     },
     (callback) => {
       // length also checks if its the commanderJS function or a string
