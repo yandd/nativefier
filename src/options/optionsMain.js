@@ -1,34 +1,14 @@
-import _ from 'lodash';
 import async from 'async';
 import log from 'loglevel';
-import sanitizeFilenameLib from 'sanitize-filename';
 
 import inferOs from './../infer/inferOs';
 import normalizeUrl from './normalizeUrl';
 import packageJson from './../../package.json';
 import { icon, userAgent, name } from './fields';
-import { DEFAULT_APP_NAME, ELECTRON_VERSION, PLACEHOLDER_APP_DIR } from './../constants';
+import { ELECTRON_VERSION, PLACEHOLDER_APP_DIR } from './../constants';
 
 const { inferPlatform, inferArch } = inferOs;
 
-function sanitizeFilename(platform, str) {
-  let result = sanitizeFilenameLib(str);
-
-  // remove all non ascii or use default app name
-  // eslint-disable-next-line no-control-regex
-  result = result.replace(/[^\x00-\x7F]/g, '') || DEFAULT_APP_NAME;
-
-  // spaces will cause problems with Ubuntu when pinned to the dock
-  if (platform === 'linux') {
-    return _.kebabCase(result);
-  }
-  return result;
-}
-
-function sanitizeOptions(options) {
-  const name = sanitizeFilename(options.platform, options.name);
-  return Object.assign({}, options, { name });
-}
 
 /**
  * @callback optionsCallback
@@ -76,7 +56,7 @@ function optionsFactory(inpOptions, callback) {
     disableContextMenu: inpOptions.disableContextMenu,
     disableDevTools: inpOptions.disableDevTools,
     crashReporter: inpOptions.crashReporter,
-        // workaround for electron-packager#375
+    // workaround for electron-packager#375
     tmpdir: false,
     zoom: inpOptions.zoom || 1.0,
     internalUrls: inpOptions.internalUrls || null,
@@ -134,11 +114,7 @@ function optionsFactory(inpOptions, callback) {
       });
     },
   ], (error) => {
-    if (error) {
-      callback(error);
-      return;
-    }
-    callback(null, sanitizeOptions(options));
+    callback(error, options);
   });
 }
 
